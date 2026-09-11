@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ServiNow - Servicios Bajo Demanda</title>
+  <style>
+    :root {
+      --bg-primary: #0f0f11;
+      --bg-card: #1a1a1e;
+      --bg-input: #26262b;
+      --text-main: #ffffff;
+      --text-muted: #a0a0ab;
+      --accent: #ff5252; /* Color de acento dinámico (ej. Rojo Coral Energético) */
+      --accent-hover: #ff3838;
+      --border-color: #2e2e35;
+      --success: #00e676;
+      --star: #ffc107;
+      --radius: 16px;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #000;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Modis de pantalla móvil Android */
+    .app-container {
+      width: 100%;
+      max-width: 430px;
+      height: 100vh;
+      max-height: 932px;
+      background-color: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    }
+
+    @media (min-width: 480px) {
+      .app-container {
+        height: 90vh;
+        border-radius: 36px;
+        border: 8px solid #222;
+      }
+    }
+
+    /* Status Bar Mockup */
+    .status-bar {
+      height: 40px;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      z-index: 10;
+    }
+
+    /* Encabezado */
+    .app-header {
+      padding: 10px 20px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .brand {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .brand span {
+      color: var(--accent);
+    }
+
+    /* Switch de Rol: Cliente / Proveedor */
+    .role-switch {
+      background: var(--bg-input);
+      padding: 4px;
+      border-radius: 20px;
+      display: flex;
+      gap: 2px;
+      border: 1px solid var(--border-color);
+    }
+
+    .role-btn {
+      padding: 6px 12px;
+      border-radius: 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .role-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* Dynamic Content View */
+    .view-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .view-content::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Hero Search */
+    .hero-title {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .search-box {
+      position: relative;
+      margin-top: 5px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 16px 16px 16px 48px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      color: var(--text-main);
+      font-size: 15px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(255, 82, 82, 0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      opacity: 0.5;
+    }
+
+    /* Quick Badges */
+    .badge-container {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    .badge-container::-webkit-scrollbar { display: none; }
+
+    .badge {
+      padding: 8px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 12px;
+      white-space: nowrap;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .badge.active {
+      background: var(--text-main);
+      color: var(--bg-primary);
+      font-weight: 700;
+      border-color: var(--text-main);
+    }
+
+    /* Grid de Categorías */
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .category-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 16px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+
+    .category-card:hover, .category-card:active {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+
+    .category-icon {
+      font-size: 28px;
+    }
+
+    .category-name {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Lista de Proveedores */
+    .providers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .provider-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      gap: 14px;
+      position: relative;
+    }
+
+    .provider-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+    }
+
+    .provider-info {
+      flex: 1;
+    }
+
+    .provider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .provider-name {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .verified-check {
+      color: var(--success);
+      font-size: 12px;
+    }
+
+    .provider-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .provider-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .rating {
+      color: var(--star);
+      font-weight: 700;
+    }
+
+    .distance {
+      color: var(--text-muted);
+    }
+
+    .provider-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .price {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .price span {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .btn-hire {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-hire:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Modal de Contratación */
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(5px);
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: 100%;
+      background: var(--bg-card);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      padding: 24px;
+      border-top: 1px solid var(--border-color);
+      transform: translateY(100%);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .close-btn {
+      background: var(--bg-input);
+      border: none;
+      color: var(--text-main);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .security-badge {
+      background: rgba(0, 230, 118, 0.1);
+      border: 1px solid var(--success);
+      color: var(--success);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-confirm {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      width: 100%;
+      padding: 16px;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    /* Footer Navigation */
+    .app-nav {
+      height: 65px;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 10px;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+      font-size: 10px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    .nav-icon {
+      font-size: 20px;
+    }
+
+    /* Proveedor View Specifics */
+    .provider-dashboard {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .status-toggle {
+      background: var(--bg-card);
+      padding: 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 24px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--bg-input);
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px; width: 18px;
+      left: 3px; bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider { background-color: var(--success); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>5G LTE</span>
+    </div>
+
+    <!-- Header Principal -->
+    <header class="app-header">
+      <div class="brand">Servi<span>Now</span></div>
+      <div class="role-switch">
+        <button class="role-btn active" id="btn-client" onclick="setRole('client')">Contratar</button>
+        <button class="role-btn" id="btn-provider" onclick="setRole('provider')">Trabajar</button>
+      </div>
+    </header>
+
+    <!-- Vista Cliente -->
+    <main class="view-content" id="client-view">
+      <div>
+        <h1 class="hero-title">¿Qué necesitas hoy?</h1>
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Ej: Mecánico, Mesera, Limpieza..." onkeyup="filterServices()">
+        </div>
+      </div>
+
+      <!-- Filtros Rápidos -->
+      <div class="badge-container">
+        <div class="badge active" onclick="filterType('all', this)">Todos</div>
+        <div class="badge" onclick="filterType('express', this)">⚡ Ahora mismo</div>
+        <div class="badge" onclick="filterType('hours', this)">⏱️ Por horas</div>
+        <div class="badge" onclick="filterType('verified', this)">🛡️ Verificados</div>
+      </div>
+
+      <!-- Categorías -->
+      <div class="section-title">Categorías Populares</div>
+      <div class="categories-grid">
+        <div class="category-card" onclick="searchCategory('Limpieza')">
+          <span class="category-icon">🧹</span>
+          <span class="category-name">Limpieza</span>
+        </div>
+        <div class="category-card" onclick="searchCategory('Mecánica')">
+          <span class="category-icon">🚗</span>
+          <span class="category-name">Mecánica</span>
+        </div>
+        <div class="category-card" onclick="searchCategory('Cuidado')">
+          <span class="category-icon">👶</span>
+          <span class="category-name">Cuidado</span>
+        </div>
+        <div class="category-card" onclick="searchCategory('Eventos')">
+          <span class="category-icon">🎉</span>
+          <span class="category-name">Eventos</span>
+        </div>
+        <div class="category-card" onclick="searchCategory('Técnico')">
+          <span class="category-icon">🔧</span>
+          <span class="category-name">Reparación</span>
+        </div>
+        <div class="category-card" onclick="searchCategory('Cocina')">
+          <span class="category-icon">🍳</span>
+          <span class="category-name">Cocina</span>
+        </div>
+      </div>
+
+      <!-- Lista de Servicios Disponibles -->
+      <div class="section-title">Disponibles cerca de ti</div>
+      <div class="providers-list" id="providers-container">
+        <!-- Renderizado dinámico vía JS -->
+      </div>
+    </main>
+
+    <!-- Vista Proveedor/Trabajador -->
+    <main class="view-content provider-dashboard" id="provider-view">
+      <div class="status-toggle">
+        <div>
+          <div style="font-weight: 700; font-size: 15px;">Estado de Disponibilidad</div>
+          <div style="font-size: 12px; color: var(--text-muted);" id="status-label">Estás activo para recibir solicitudes</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" checked onchange="toggleAvailability(this)">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="section-title">Solicitudes Rápidas Cercanas</div>
+      <div class="providers-list">
+        <div class="provider-card">
+          <div class="provider-info">
+            <div class="provider-name">Meseros para Evento Privado</div>
+            <div class="provider-title">Solicitado por Carlos M. • A 1.2 km</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin: 8px 0;">"Necesito 2 personas para apoyo en servicio de mesa durante 4 horas."</div>
+            <div class="provider-footer">
+              <div class="price">$12.00 <span>/hora</span></div>
+              <button class="btn-hire" style="background: var(--success);" onclick="alert('¡Solicitud Aceptada! Se han enviado los datos de contacto.')">Aceptar Trabajo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal de Contratación / Seguridad -->
+    <div class="modal-overlay" id="hire-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title">Confirmar Solicitud</div>
+          <button class="close-btn" onclick="closeModal()">✕</button>
+        </div>
+        <div id="modal-provider-details">
+          <!-- Detalles inyectados por JS -->
+        </div>
+        <div class="security-badge">
+          🛡️ <strong>Garantía de Seguridad:</strong> Identidad, antecedentes y número de teléfono verificados. Servicio monitoreado en tiempo real.
+        </div>
+        <button class="btn-confirm" onclick="confirmBooking()">Contratar Ahora</button>
+      </div>
+    </div>
+
+    <!-- Navegación Inferior Estilo Android -->
+    <nav class="app-nav">
+      <div class="nav-item active">
+        <span class="nav-icon">🔍</span>
+        <span>Explorar</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">📅</span>
+        <span>Servicios</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">💬</span>
+        <span>Chat</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">👤</span>
+        <span>Perfil</span>
+      </div>
+    </nav>
+  </div>
+
+  <script>
+    // Datos simulados en tiempo real
+    const providersData = [
+      {
+        id: 1,
+        name: "Sofía Martínez",
+        title: "Mesera y Atención de Eventos",
+        category: "Eventos",
+        rating: "4.9",
+        reviews: 42,
+        distance: "0.8 km",
+        price: 10,
+        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        verified: true,
+        type: "express"
+      },
+      {
+        id: 2,
+        name: "Carlos Mendoza",
+        title: "Mecánico Automotriz a Domicilio",
+        category: "Mecánica",
+        rating: "4.8",
+        reviews: 89,
+        distance: "1.5 km",
+        price: 25,
+        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+        verified: true,
+        type: "express"
+      },
+      {
+        id: 3,
+        name: "Elena Rostova",
+        title: "Cuidado de Adulto Mayor y Acompañamiento",
+        category: "Cuidado",
+        rating: "5.0",
+        reviews: 31,
+        distance: "2.1 km",
+        price: 15,
+        photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+        verified: true,
+        type: "hours"
+      },
+      {
+        id: 4,
+        name: "Miguel Ángel Ruiz",
+        title: "Técnico Electricista & Plomería",
+        category: "Reparación",
+        rating: "4.7",
+        reviews: 64,
+        distance: "3.0 km",
+        price: 20,
+        photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+        verified: true,
+        type: "hours"
+      }
+    ];
+
+    let currentSelectedProvider = null;
+
+    // Renderizar tarjetas de servicio
+    function renderProviders(data) {
+      const container = document.getElementById('providers-container');
+      container.innerHTML = '';
+
+      if (data.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">No se encontraron servicios disponibles.</div>`;
+        return;
+      }
+
+      data.forEach(provider => {
+        const card = document.createElement('div');
+        card.className = 'provider-card';
+        card.innerHTML = `
+          <img src="${provider.photo}" class="provider-avatar" alt="${provider.name}">
+          <div class="provider-info">
+            <div class="provider-header">
+              <div class="provider-name">
+                ${provider.name}
+                ${provider.verified ? '<span class="verified-check" title="Perfil Verificado">✓</span>' : ''}
+              </div>
+            </div>
+            <div class="provider-title">${provider.title}</div>
+            <div class="provider-meta">
+              <span class="rating">★ ${provider.rating} (${provider.reviews})</span>
+              <span class="distance">📍 ${provider.distance}</span>
+            </div>
+            <div class="provider-footer">
+              <div class="price">$${provider.price}.00 <span>/hora</span></div>
+              <button class="btn-hire" onclick="openModal(${provider.id})">Contratar</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Filtrar mediante la barra de búsqueda
+    function filterServices() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const filtered = providersData.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.title.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query)
+      );
+      renderProviders(filtered);
+    }
+
+    function searchCategory(cat) {
+      document.getElementById('search-input').value = cat;
+      filterServices();
+    }
+
+    function filterType(type, element) {
+      document.querySelectorAll('.badge').forEach(b => b.classList.remove('active'));
+      element.classList.add('active');
+
+      if (type === 'all') {
+        renderProviders(providersData);
+      } else {
+        const filtered = providersData.filter(p => p.type === type || (type === 'verified' && p.verified));
+        renderProviders(filtered);
+      }
+    }
+
+    // Cambiar Rol (Cliente vs Proveedor)
+    function setRole(role) {
+      const clientBtn = document.getElementById('btn-client');
+      const providerBtn = document.getElementById('btn-provider');
+      const clientView = document.getElementById('client-view');
+      const providerView = document.getElementById('provider-view');
+
+      if (role === 'client') {
+        clientBtn.classList.add('active');
+        providerBtn.classList.remove('active');
+        clientView.style.display = 'flex';
+        providerView.style.display = 'none';
+      } else {
+        providerBtn.classList.add('active');
+        clientBtn.classList.remove('active');
+        clientView.style.display = 'none';
+        providerView.style.display = 'flex';
+      }
+    }
+
+    function toggleAvailability(checkbox) {
+      const label = document.getElementById('status-label');
+      if (checkbox.checked) {
+        label.innerText = "Estás activo para recibir solicitudes";
+        label.style.color = "var(--text-muted)";
+      } else {
+        label.innerText = "Modo Inactivo (No recibirás solicitudes)";
+        label.style.color = "var(--accent)";
+      }
+    }
+
+    // Lógica del Modal
+    function openModal(id) {
+      currentSelectedProvider = providersData.find(p => p.id === id);
+      const detailsContainer = document.getElementById('modal-provider-details');
+
+      detailsContainer.innerHTML = `
+        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+          <img src="${currentSelectedProvider.photo}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+          <div>
+            <div style="font-weight: 700;">${currentSelectedProvider.name}</div>
+            <div style="font-size: 12px; color: var(--text-muted);">${currentSelectedProvider.title}</div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px; padding: 10px 0; border-top: 1px solid var(--border-color);">
+          <span>Tarifa por hora:</span>
+          <strong>$${currentSelectedProvider.price}.00</strong>
+        </div>
+      `;
+
+      document.getElementById('hire-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('hire-modal').classList.remove('active');
+    }
+
+    function confirmBooking() {
+      closeModal();
+      alert(`¡Solicitud enviada a ${currentSelectedProvider.name}! Te notificaremos tan pronto confirme la llegada al punto indicado.`);
+    }
+
+    // Carga Inicial
+    window.onload = () => {
+      renderProviders(providersData);
+    };
+  </script>
+</body>
+</html>
